@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  it18130430mongodb:
+    image: mongo
+    volumes:
+      - IT18130430mongodbdata:/data/db
+    container_name: IT18130430mongodb
+    env_file:
+      - ./env/IT18130430mongo.env
+
+  it18130430backend:
+    build:
+      context: IT18130430backend
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./env/IT18130430backend.env
+    ports:
+      - "80" # {your port:container port}
+    depends_on:
+      - it18130430mongodb
+    scale: 3
+
+  it18130430frontend:
+    build:
+      context: ./IT18130430frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000"
+    depends_on:
+      - it18130430backend
+    scale: 3
+  
+  it18130430proxy:
+    build:
+      context: ./nginx
+    ports:
+      - "8081:80"
+      - "3000:3000"
+    depends_on:
+      - it18130430backend
+      - it18130430frontend
+
+# define your name volum here.
+volumes:
+  IT18130430mongodbdata:
